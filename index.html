@@ -31,15 +31,20 @@
 
       <div class="task-toolbar">
         <p id="task-summary" class="task-summary" aria-live="polite"></p>
-        <div id="filter-controls" class="filter-controls" role="group" aria-label="筛选任务">
-          <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">
-            全部
-          </button>
-          <button class="filter-button" type="button" data-filter="active" aria-pressed="false">
-            未完成
-          </button>
-          <button class="filter-button" type="button" data-filter="completed" aria-pressed="false">
-            已完成
+        <div class="task-controls">
+          <div id="filter-controls" class="filter-controls" role="group" aria-label="筛选任务">
+            <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">
+              全部
+            </button>
+            <button class="filter-button" type="button" data-filter="active" aria-pressed="false">
+              未完成
+            </button>
+            <button class="filter-button" type="button" data-filter="completed" aria-pressed="false">
+              已完成
+            </button>
+          </div>
+          <button id="clear-completed" class="clear-completed-button" type="button" disabled>
+            清除已完成
           </button>
         </div>
       </div>

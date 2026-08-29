@@ -8,6 +8,7 @@ const todoList = document.querySelector("#todo-list");
 const taskSummary = document.querySelector("#task-summary");
 const filterControls = document.querySelector("#filter-controls");
 const filterButtons = document.querySelectorAll(".filter-button");
+const clearCompletedButton = document.querySelector("#clear-completed");
 
 let tasks = loadTasks();
 let currentFilter = "all";
@@ -87,6 +88,7 @@ function renderTasks() {
 
   const visibleTasks = getVisibleTasks();
   const completedCount = tasks.filter((task) => task.completed).length;
+  clearCompletedButton.disabled = completedCount === 0;
   taskSummary.textContent =
     tasks.length === 0
       ? "0 个任务"
@@ -159,6 +161,12 @@ function deleteTask(id) {
   renderTasks();
 }
 
+function clearCompletedTasks() {
+  tasks = tasks.filter((task) => !task.completed);
+  saveTasks();
+  renderTasks();
+}
+
 todoForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -200,5 +208,7 @@ filterControls.addEventListener("click", (event) => {
   currentFilter = filterButton.dataset.filter;
   renderTasks();
 });
+
+clearCompletedButton.addEventListener("click", clearCompletedTasks);
 
 renderTasks();
