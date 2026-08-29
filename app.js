@@ -12,6 +12,7 @@ const clearCompletedButton = document.querySelector("#clear-completed");
 
 let tasks = loadTasks();
 let currentFilter = "all";
+let editingTaskId = null;
 
 function loadTasks() {
   try {
@@ -106,7 +107,8 @@ function renderTasks() {
 
   visibleTasks.forEach((task) => {
     const listItem = document.createElement("li");
-    listItem.className = `todo-item${task.completed ? " completed" : ""}`;
+    const isEditing = task.id === editingTaskId;
+    listItem.className = `todo-item${task.completed ? " completed" : ""}${isEditing ? " editing" : ""}`;
     listItem.dataset.id = task.id;
 
     const toggleButton = document.createElement("button");
@@ -118,26 +120,74 @@ function renderTasks() {
       task.completed ? `将“${task.text}”标记为未完成` : `完成“${task.text}”`,
     );
 
-    const taskText = document.createElement("span");
-    taskText.className = "todo-text";
-    taskText.dataset.action = "toggle";
-    taskText.textContent = task.text;
+    listItem.append(toggleButton);
 
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "button";
-    deleteButton.className = "delete-button";
-    deleteButton.dataset.action = "delete";
-    deleteButton.textContent = "删除";
-    deleteButton.setAttribute("aria-label", `删除“${task.text}”`);
+    if (isEditing) {
+      const editForm = document.createElement("form");
+      editForm.className = "edit-form";
 
-    listItem.append(toggleButton, taskText, deleteButton);
+      const editInput = document.createElement("input");
+      editInput.className = "edit-input";
+      editInput.type = "text";
+      editInput.value = task.text;
+      editInput.maxLength = 120;
+      editInput.required = true;
+      editInput.setAttribute("aria-label", `编辑“${task.text}”`);
+
+      const saveButton = document.createElement("button");
+      saveButton.type = "submit";
+      saveButton.className = "save-button";
+      saveButton.textContent = "保存";
+
+      const cancelButton = document.createElement("button");
+      cancelButton.type = "button";
+      cancelButton.className = "cancel-button";
+      cancelButton.dataset.action = "cancel-edit";
+      cancelButton.textContent = "取消";
+
+      editForm.append(editInput, saveButton, cancelButton);
+      listItem.append(editForm);
+    } else {
+      const taskText = document.createElement("span");
+      taskText.className = "todo-text";
+      taskText.dataset.action = "toggle";
+      taskText.textContent = task.text;
+
+      const taskActions = document.createElement("div");
+      taskActions.className = "task-actions";
+
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "edit-button";
+      editButton.dataset.action = "edit";
+      editButton.textContent = "编辑";
+      editButton.setAttribute("aria-label", `编辑“${task.text}”`);
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "delete-button";
+      deleteButton.dataset.action = "delete";
+      deleteButton.textContent = "删除";
+      deleteButton.setAttribute("aria-label", `删除“${task.text}”`);
+
+      taskActions.append(editButton, deleteButton);
+      listItem.append(taskText, taskActions);
+    }
+
     fragment.append(listItem);
   });
 
   todoList.append(fragment);
+
+  if (editingTaskId) {
+    const editInput = todoList.querySelector(".edit-input");
+    editInput?.focus();
+    editInput?.select();
+  }
 }
 
 function addTask(text) {
+  editingTaskId = null;
   tasks.push({
     id: createTaskId(),
     text,
@@ -148,6 +198,7 @@ function addTask(text) {
 }
 
 function toggleTask(id) {
+  editingTaskId = null;
   tasks = tasks.map((task) =>
     task.id === id ? { ...task, completed: !task.completed } : task,
   );
@@ -156,15 +207,47 @@ function toggleTask(id) {
 }
 
 function deleteTask(id) {
+  editingTaskId = null;
   tasks = tasks.filter((task) => task.id !== id);
   saveTasks();
   renderTasks();
 }
 
 function clearCompletedTasks() {
+  editingTaskId = null;
   tasks = tasks.filter((task) => !task.completed);
   saveTasks();
   renderTasks();
+}
+
+function startEditing(id) {
+  if (!tasks.some((task) => task.id === id)) {
+    return;
+  }
+
+  editingTaskId = id;
+  renderTasks();
+}
+
+function cancelEditing() {
+  editingTaskId = null;
+  renderTasks();
+}
+
+function saveEditedTask(id, text) {
+  const normalizedText = text.trim();
+
+  if (!normalizedText) {
+    return false;
+  }
+
+  tasks = tasks.map((task) =>
+    task.id === id ? { ...task, text: normalizedText } : task,
+  );
+  editingTaskId = null;
+  saveTasks();
+  renderTasks();
+  return true;
 }
 
 todoForm.addEventListener("submit", (event) => {
@@ -189,12 +272,51 @@ todoList.addEventListener("click", (event) => {
     return;
   }
 
-  if (actionTarget.dataset.action === "toggle") {
-    toggleTask(listItem.dataset.id);
+  switch (actionTarget.dataset.action) {
+    case "toggle":
+      toggleTask(listItem.dataset.id);
+      break;
+    case "delete":
+      deleteTask(listItem.dataset.id);
+      break;
+    case "edit":
+      startEditing(listItem.dataset.id);
+      break;
+    case "cancel-edit":
+      cancelEditing();
+      break;
+  }
+});
+
+todoList.addEventListener("submit", (event) => {
+  const editForm = event.target.closest(".edit-form");
+  const listItem = event.target.closest(".todo-item");
+
+  if (!editForm || !listItem) {
+    return;
   }
 
-  if (actionTarget.dataset.action === "delete") {
-    deleteTask(listItem.dataset.id);
+  event.preventDefault();
+
+  const editInput = editForm.querySelector(".edit-input");
+  const wasSaved = saveEditedTask(listItem.dataset.id, editInput.value);
+
+  if (!wasSaved) {
+    editInput.setAttribute("aria-invalid", "true");
+    editInput.focus();
+  }
+});
+
+todoList.addEventListener("input", (event) => {
+  if (event.target.matches(".edit-input")) {
+    event.target.removeAttribute("aria-invalid");
+  }
+});
+
+todoList.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && event.target.matches(".edit-input")) {
+    event.preventDefault();
+    cancelEditing();
   }
 });
 
@@ -205,6 +327,7 @@ filterControls.addEventListener("click", (event) => {
     return;
   }
 
+  editingTaskId = null;
   currentFilter = filterButton.dataset.filter;
   renderTasks();
 });

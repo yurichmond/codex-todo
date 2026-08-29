@@ -230,6 +230,71 @@ h1 {
   cursor: pointer;
 }
 
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edit-button,
+.save-button,
+.cancel-button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 0.85rem;
+  transition: color 160ms ease, background 160ms ease;
+}
+
+.edit-button,
+.save-button {
+  color: #5270bf;
+}
+
+.edit-button:hover,
+.edit-button:focus-visible,
+.save-button:hover,
+.save-button:focus-visible {
+  color: #355ecf;
+  background: #edf2ff;
+}
+
+.cancel-button {
+  color: #6f7b90;
+}
+
+.cancel-button:hover,
+.cancel-button:focus-visible {
+  color: #39465a;
+  background: #eef2f7;
+}
+
+.edit-form {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+}
+
+.edit-input {
+  min-width: 0;
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #527cf2;
+  border-radius: 9px;
+  outline: none;
+  color: #243043;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(82 124 242 / 12%);
+}
+
+.edit-input[aria-invalid="true"] {
+  border-color: #c1374d;
+  box-shadow: 0 0 0 3px rgb(193 55 77 / 12%);
+}
+
 .todo-item.completed {
   background: #f8fafc;
 }
@@ -320,6 +385,23 @@ h1 {
 
   .clear-completed-button {
     width: 100%;
+  }
+
+  .todo-item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .todo-text {
+    padding-top: 2px;
+  }
+
+  .task-actions {
+    margin-left: 34px;
+  }
+
+  .edit-form {
+    flex-basis: calc(100% - 34px);
   }
 }
 
