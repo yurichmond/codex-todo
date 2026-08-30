@@ -71,9 +71,9 @@ h1 {
   gap: 12px;
 }
 
-.todo-form input {
+.todo-form input,
+.todo-form select {
   min-width: 0;
-  flex: 1;
   padding: 14px 16px;
   border: 1px solid #d9e0ea;
   border-radius: 12px;
@@ -83,7 +83,17 @@ h1 {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.todo-form input:focus {
+.todo-form input {
+  flex: 1;
+}
+
+.priority-select {
+  flex: 0 0 104px;
+  cursor: pointer;
+}
+
+.todo-form input:focus,
+.todo-form select:focus {
   border-color: #527cf2;
   box-shadow: 0 0 0 4px rgb(82 124 242 / 14%);
 }
@@ -242,12 +252,44 @@ h1 {
   background: #fff;
 }
 
+.task-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .todo-text {
   min-width: 0;
   flex: 1;
   overflow-wrap: anywhere;
   line-height: 1.5;
   cursor: pointer;
+}
+
+.priority-badge {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.priority-badge[data-priority="高"] {
+  color: #b4233a;
+  background: #fff0f2;
+}
+
+.priority-badge[data-priority="中"] {
+  color: #93610d;
+  background: #fff7dc;
+}
+
+.priority-badge[data-priority="低"] {
+  color: #376879;
+  background: #eaf7fa;
 }
 
 .task-actions {
@@ -384,6 +426,11 @@ h1 {
     width: 100%;
   }
 
+  .priority-select {
+    width: 100%;
+    flex: none;
+  }
+
   .task-toolbar {
     align-items: flex-start;
     flex-direction: column;
@@ -412,7 +459,8 @@ h1 {
     flex-wrap: wrap;
   }
 
-  .todo-text {
+  .task-content {
+    flex-basis: calc(100% - 34px);
     padding-top: 2px;
   }
 

@@ -1,9 +1,12 @@
 "use strict";
 
 const STORAGE_KEY = "todoTasks";
+const PRIORITY_VALUES = ["高", "中", "低"];
+const DEFAULT_PRIORITY = "中";
 
 const todoForm = document.querySelector("#todo-form");
 const todoInput = document.querySelector("#todo-input");
+const prioritySelect = document.querySelector("#priority-select");
 const todoList = document.querySelector("#todo-list");
 const taskSummary = document.querySelector("#task-summary");
 const filterControls = document.querySelector("#filter-controls");
@@ -16,6 +19,10 @@ let currentFilter = "all";
 let editingTaskId = null;
 let searchQuery = "";
 
+function normalizePriority(priority) {
+  return PRIORITY_VALUES.includes(priority) ? priority : DEFAULT_PRIORITY;
+}
+
 function loadTasks() {
   try {
     const savedTasks = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -24,13 +31,18 @@ function loadTasks() {
       return [];
     }
 
-    return savedTasks.filter(
-      (task) =>
-        task &&
-        typeof task.id === "string" &&
-        typeof task.text === "string" &&
-        typeof task.completed === "boolean",
-    );
+    return savedTasks
+      .filter(
+        (task) =>
+          task &&
+          typeof task.id === "string" &&
+          typeof task.text === "string" &&
+          typeof task.completed === "boolean",
+      )
+      .map((task) => ({
+        ...task,
+        priority: normalizePriority(task.priority),
+      }));
   } catch (error) {
     console.warn("无法读取保存的任务，将使用空列表。", error);
     return [];
@@ -158,10 +170,19 @@ function renderTasks() {
       editForm.append(editInput, saveButton, cancelButton);
       listItem.append(editForm);
     } else {
+      const taskContent = document.createElement("div");
+      taskContent.className = "task-content";
+
       const taskText = document.createElement("span");
       taskText.className = "todo-text";
       taskText.dataset.action = "toggle";
       taskText.textContent = task.text;
+
+      const priorityBadge = document.createElement("span");
+      priorityBadge.className = "priority-badge";
+      priorityBadge.dataset.priority = task.priority;
+      priorityBadge.textContent = task.priority;
+      priorityBadge.setAttribute("aria-label", `优先级：${task.priority}`);
 
       const taskActions = document.createElement("div");
       taskActions.className = "task-actions";
@@ -181,7 +202,8 @@ function renderTasks() {
       deleteButton.setAttribute("aria-label", `删除“${task.text}”`);
 
       taskActions.append(editButton, deleteButton);
-      listItem.append(taskText, taskActions);
+      taskContent.append(taskText, priorityBadge);
+      listItem.append(taskContent, taskActions);
     }
 
     fragment.append(listItem);
@@ -196,12 +218,13 @@ function renderTasks() {
   }
 }
 
-function addTask(text) {
+function addTask(text, priority) {
   editingTaskId = null;
   tasks.push({
     id: createTaskId(),
     text,
     completed: false,
+    priority: normalizePriority(priority),
   });
   saveTasks();
   renderTasks();
@@ -269,7 +292,7 @@ todoForm.addEventListener("submit", (event) => {
     return;
   }
 
-  addTask(taskText);
+  addTask(taskText, prioritySelect.value);
   todoForm.reset();
   todoInput.focus();
 });
