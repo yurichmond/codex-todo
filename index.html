@@ -30,6 +30,18 @@
         <button type="submit">添加任务</button>
       </form>
 
+      <div class="task-search">
+        <label class="sr-only" for="task-search">搜索任务</label>
+        <input
+          id="task-search"
+          class="search-input"
+          type="search"
+          placeholder="搜索任务……"
+          autocomplete="off"
+          aria-controls="todo-list"
+        />
+      </div>
+
       <div class="task-toolbar">
         <p id="task-summary" class="task-summary" aria-live="polite"></p>
         <div class="task-controls">

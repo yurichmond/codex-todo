@@ -9,10 +9,12 @@ const taskSummary = document.querySelector("#task-summary");
 const filterControls = document.querySelector("#filter-controls");
 const filterButtons = document.querySelectorAll(".filter-button");
 const clearCompletedButton = document.querySelector("#clear-completed");
+const searchInput = document.querySelector("#task-search");
 
 let tasks = loadTasks();
 let currentFilter = "all";
 let editingTaskId = null;
+let searchQuery = "";
 
 function loadTasks() {
   try {
@@ -52,20 +54,28 @@ function createTaskId() {
 }
 
 function getVisibleTasks() {
-  if (currentFilter === "active") {
-    return tasks.filter((task) => !task.completed);
-  }
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
 
-  if (currentFilter === "completed") {
-    return tasks.filter((task) => task.completed);
-  }
+  return tasks.filter((task) => {
+    const matchesFilter =
+      currentFilter === "all" ||
+      (currentFilter === "active" && !task.completed) ||
+      (currentFilter === "completed" && task.completed);
+    const matchesSearch = task.text
+      .toLocaleLowerCase()
+      .includes(normalizedQuery);
 
-  return tasks;
+    return matchesFilter && matchesSearch;
+  });
 }
 
 function getEmptyStateMessage() {
   if (tasks.length === 0) {
     return "还没有任务，先添加一件想做的事吧。";
+  }
+
+  if (searchQuery.trim()) {
+    return `没有找到匹配“${searchQuery.trim()}”的任务。`;
   }
 
   if (currentFilter === "active") {
@@ -329,6 +339,12 @@ filterControls.addEventListener("click", (event) => {
 
   editingTaskId = null;
   currentFilter = filterButton.dataset.filter;
+  renderTasks();
+});
+
+searchInput.addEventListener("input", (event) => {
+  editingTaskId = null;
+  searchQuery = event.target.value;
   renderTasks();
 });
 
